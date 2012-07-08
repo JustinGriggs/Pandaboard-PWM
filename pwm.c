@@ -19,7 +19,7 @@ static int32_t timer_irq;
 
 // do some kernel module documentation
 MODULE_AUTHOR("Justin Griggs <justin@bustedengineering.com>");
-MODULE_DESCRIPTION("OMAP4460 and PWM GPIO generation Module");
+MODULE_DESCRIPTION("OMAP4460 PWM GPIO generation Module for robotics applications");
 MODULE_LICENSE("GPL");
 
 /* The interrupt handler.
@@ -35,7 +35,7 @@ static irqreturn_t timer_irq_handler(int irq, void *dev_id)
 	omap_dm_timer_write_status(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
 	omap_dm_timer_read_status(timer_ptr); // YES, you really need to do this 'wasteful' read
 
- // print obnoxious text
+ 	// print obnoxious text
   	printk("Meow Meow Meow %d\n", irq_counter ++);
 	
 	// tell the kernel it's handled
@@ -55,11 +55,38 @@ static int set_pwm_dutycycle(int dutycycle)
 	return 0;
 }
 
+// setup a GPIO pin for use
+static int setup_gpio_pin(int gpio_number)
+{
+
+	// see if that pin is available to use
+	if (gpio_is_valid(gpio_number))
+	{
+		printk("pwm module: setting up gpio pin %i...\n",gpio_number);
+		// allocation
+		gpio_request(gpio_number);
+		// TODO add checking
+		// set as output
+		gpio_direction_ouput(gpio_number,0);
+	}
+	else
+	{
+		// pin not valid
+		printk("pwm module: requested GPIO is not valid\n");
+		// return failure
+		return -1;	
+	}
+	
+	// return success
+	return 0;
+}
+
 static int __init pwm_start(void)
 {
 	int ret = 0;
   	struct clk *timer_fclk;
 	uint32_t gt_rate;
+	int pin = 
 	
 	printk(KERN_INFO "Loading PWM Module... \n");
 
@@ -104,7 +131,10 @@ static int __init pwm_start(void)
 	// done!		
 	printk("pwm: GP Timer initialized and started (%lu Hz, IRQ %d)\n", (long unsigned)gt_rate, timer_irq);
 
-	// return sucsess
+
+	// setup a pin to use
+	
+	// return success
 	return 0;
 }
 
@@ -118,8 +148,10 @@ static void __exit pwm_end(void)
 	// release the IRQ handler
 	free_irq(timer_irq, timer_irq_handler);
 
- 	 // release the timer
+ 	// release the timer
   	omap_dm_timer_free(timer_ptr);
+
+	// release GPIO 
 }
 
 // entry and exit points
