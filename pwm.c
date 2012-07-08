@@ -4,6 +4,7 @@
 #include <linux/init.h>			
 #include <linux/clk.h>		
 #include <linux/irq.h>
+#include <plat/gpio.h>
 #include <linux/interrupt.h>
 #include <asm/io.h>			
 #include <plat/dmtimer.h>	
@@ -18,7 +19,7 @@ static int32_t timer_irq;
 
 // do some kernel module documentation
 MODULE_AUTHOR("Justin Griggs <justin@bustedengineering.com>");
-MODULE_DESCRIPTION("OMAP4460 GP Timer and PWM generation Module");
+MODULE_DESCRIPTION("OMAP4460 and PWM GPIO generation Module");
 MODULE_LICENSE("GPL");
 
 /* The interrupt handler.
