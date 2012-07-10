@@ -1,0 +1,2 @@
+I'm trying to make a kernel module that will allow for PWM signals to be generated on the GPIO of the pandaboard.
+I'm making it a kernel module so I can use the OMAP's timers.
