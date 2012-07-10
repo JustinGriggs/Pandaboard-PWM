@@ -4,17 +4,13 @@
 #include <linux/init.h>			
 #include <linux/clk.h>		
 #include <linux/irq.h>
-#include <plat/gpio.h>
+#include <linux/gpio.h>
 #include <linux/interrupt.h>
 #include <asm/io.h>			
 #include <plat/dmtimer.h>	
 #include <linux/types.h>
 
-// opaque pointer to timer object
-static struct omap_dm_timer *timer_ptr;
-
-// the IRQ # for our gp timer
-static int32_t timer_irq;
+#include "pwm.h"
 
 
 // do some kernel module documentation
@@ -35,8 +31,8 @@ static irqreturn_t timer_irq_handler(int irq, void *dev_id)
 	omap_dm_timer_write_status(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
 	omap_dm_timer_read_status(timer_ptr); // YES, you really need to do this 'wasteful' read
 
- 	// print obnoxious text
-  	printk("Meow Meow Meow %d\n", irq_counter ++);
+ 	// set the pins to high
+  	
 	
 	// tell the kernel it's handled
 	return IRQ_HANDLED;
@@ -56,7 +52,7 @@ static int set_pwm_dutycycle(int dutycycle)
 }
 
 // setup a GPIO pin for use
-static int setup_gpio_pin(int gpio_number)
+static int pwm_setup_pin(int gpio_number)
 {
 
 	// see if that pin is available to use
@@ -64,7 +60,7 @@ static int setup_gpio_pin(int gpio_number)
 	{
 		printk("pwm module: setting up gpio pin %i...\n",gpio_number);
 		// allocation
-		gpio_request(gpio_number);
+		gpio_request(gpio_number,NULL);
 		// TODO add checking
 		// set as output
 		gpio_direction_ouput(gpio_number,0);
@@ -86,11 +82,11 @@ static int __init pwm_start(void)
 	int ret = 0;
   	struct clk *timer_fclk;
 	uint32_t gt_rate;
-	int pin = 
+	
 	
 	printk(KERN_INFO "Loading PWM Module... \n");
 
-// request a timer (we are asking for ANY open timer, see dmtimer.c for details on how this works)
+	// request any timer 
 	timer_ptr = omap_dm_timer_request();
 	if(timer_ptr == NULL){
 		// no timers available
@@ -98,7 +94,7 @@ static int __init pwm_start(void)
 		return -1;
 	}
 
-	// set the clock source to system clock
+	// set the clock source to the 32kHz source
 	omap_dm_timer_set_source(timer_ptr, OMAP_TIMER_SRC_32_KHZ);
 
 	// set prescalar to 1:1
