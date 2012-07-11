@@ -31,7 +31,7 @@ static irqreturn_t timer_irq_handler(int irq, void *dev_id)
 	omap_dm_timer_write_status(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
 	omap_dm_timer_read_status(timer_ptr); // YES, you really need to do this 'wasteful' read
 
- 	// set the pins to high
+ 	// set the pins to high, a reset
   	
 	
 	// tell the kernel it's handled
@@ -54,7 +54,7 @@ static int set_pwm_dutycycle(int dutycycle)
 // setup a GPIO pin for use
 static int pwm_setup_pin(int gpio_number)
 {
-
+	
 	// see if that pin is available to use
 	if (gpio_is_valid(gpio_number))
 	{
@@ -106,7 +106,7 @@ static int __init pwm_start(void)
 	// install our IRQ handler for our timer
 	ret = request_irq(timer_irq, timer_irq_handler, IRQF_DISABLED | IRQF_TIMER , "pwm", timer_irq_handler);
 	if(ret){
-		printk("pwm: request_irq failed (on irq %d), bailing out\n", timer_irq);
+		printk("pwm module: request_irq failed (on irq %d), bailing out\n", timer_irq);
 		return ret;
 	}
 	
@@ -125,10 +125,8 @@ static int __init pwm_start(void)
 	omap_dm_timer_start(timer_ptr);
 
 	// done!		
-	printk("pwm: GP Timer initialized and started (%lu Hz, IRQ %d)\n", (long unsigned)gt_rate, timer_irq);
+	printk("pwm module: GP Timer initialized and started (%lu Hz, IRQ %d)\n", (long unsigned)gt_rate, timer_irq);
 
-
-	// setup a pin to use
 	
 	// return success
 	return 0;
@@ -147,7 +145,8 @@ static void __exit pwm_end(void)
  	// release the timer
   	omap_dm_timer_free(timer_ptr);
 
-	// release GPIO 
+	// release GPIO
+	
 }
 
 // entry and exit points
