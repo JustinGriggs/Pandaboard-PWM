@@ -59,15 +59,19 @@ static int pwm_setup_pin(int gpio_number)
 	if (gpio_is_valid(gpio_number))
 	{
 		printk("pwm module: setting up gpio pin %i...\n",gpio_number);
-		// allocation
-		gpio_request(gpio_number,NULL);
-		// TODO add checking
+		// allocate the GPIO pin
+		err = gpio_request(gpio_number,"pwmIRQ");
+		//error check
+		if(err){
+			printk('failed to request GPIO %i',gpio_number);
+			return -1;
+		}
+		
 		// set as output
 		gpio_direction_ouput(gpio_number,0);
 	}
 	else
 	{
-		// pin not valid
 		printk("pwm module: requested GPIO is not valid\n");
 		// return failure
 		return -1;	
