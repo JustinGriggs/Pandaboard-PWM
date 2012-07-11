@@ -1,6 +1,8 @@
 obj-m = pwm.o
-KVERSION = $(shell uname -r)
+KVERSION = 3.4.0-204-omap4
+INCLUDEDIR = /usr/src/linux=headers-$(VERSION)/arch/arm/plat-omap/include
+
 all:
-	make -I /usr/src/linux-headers-$(KVERSION)/arch/arm/plat-omap/include -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
+	make -I $(INCLUDEDIR) -C /lib/modules/$(KVERSION)/build M=$(PWD) modules
 clean:
 	make -C /lib/modules/$(KVERSION)/build M=$(PWD) clean
