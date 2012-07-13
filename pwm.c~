@@ -31,13 +31,16 @@ static irqreturn_t timer_irq_handler(int irq, void *dev_id) {
 	// reset the timer interrupt status
 	omap_dm_timer_write_status(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
 	omap_dm_timer_read_status(timer_ptr); // YES, you really need to do this 'wasteful' read
+	printk("pwm module: Interrupt ");
 
  	// toggle pin
 	if(gpio_get_value(pwm_data_ptr.pin)) {
 		gpio_set_value(pwm_data_ptr.pin,1);
+		printk("high \n");
 	}
 	else {
 		gpio_set_value(pwm_data_ptr.pin,0);
+		printk("low \n");
 	}
 
 	// tell the kernel it's handled
@@ -122,7 +125,7 @@ static int __init pwm_start(void) {
 	}
 
 	// set the clock source to the system clock
-	ret = omap_dm_timer_set_source(timer_ptr, OMAP_TIMER_SRC_32_KHZ);
+	ret = omap_dm_timer_set_source(timer_ptr, OMAP_TIMER_SRC_SYS_CLK);
 	if(ret) {
 		printk("pwm module: could not set source\n");
 		return -1;
@@ -148,7 +151,7 @@ static int __init pwm_start(void) {
 
 	// set preload, and autoreload
 	// we set it to a default of 1kHz
-	omap_dm_timer_set_load(timer_ptr, 1, 0xFFFFFFFF- (1* gt_rate));
+	omap_dm_timer_set_load(timer_ptr, 1, 0xFFFFFFFF - (gt_rate/10));
 
 	// setup timer to trigger our IRQ on the overflow event
 	omap_dm_timer_set_int_enable(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
@@ -162,9 +165,9 @@ static int __init pwm_start(void) {
 
 	
 	// setup a GPIO
-	ret = pwm_setup_pin(38);
-	if (ret)
-		pwm_data_ptr.pin = 38;
+	pwm_setup_pin(38);
+	
+	pwm_data_ptr.pin = 38;
 	
 
 	// return success
@@ -185,6 +188,7 @@ static void __exit pwm_end(void) {
   	omap_dm_timer_free(timer_ptr);
 
 	// release GPIO
+	gpio_free(pwm_data_ptr.pin);
 	
 }
 

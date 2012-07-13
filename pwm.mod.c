@@ -18,6 +18,7 @@ static const struct modversion_info ____versions[]
 __used
 __attribute__((section("__versions"))) = {
 	{ 0xea9bdd96, "module_layout" },
+	{ 0xfe990052, "gpio_free" },
 	{ 0x4639a755, "omap_dm_timer_free" },
 	{ 0xf20dabd8, "free_irq" },
 	{ 0x6a9edb83, "omap_dm_timer_stop" },
@@ -33,10 +34,11 @@ __attribute__((section("__versions"))) = {
 	{ 0x5e07413e, "omap_dm_timer_set_prescaler" },
 	{ 0x29af210d, "omap_dm_timer_set_source" },
 	{ 0xe20df1cb, "omap_dm_timer_request" },
-	{ 0x27e1a049, "printk" },
+	{ 0xe707d823, "__aeabi_uidiv" },
 	{ 0xefd6cf06, "__aeabi_unwind_cpp_pr0" },
 	{ 0x432fd7f6, "__gpio_set_value" },
 	{ 0x6c8d5ae8, "__gpio_get_value" },
+	{ 0x27e1a049, "printk" },
 	{ 0x510742d7, "omap_dm_timer_read_status" },
 	{ 0x59031632, "omap_dm_timer_write_status" },
 };
@@ -47,4 +49,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "EBD565CE03257E4508483F3");
+MODULE_INFO(srcversion, "A439AA8466F63605F3B03A6");
