@@ -12,6 +12,9 @@
 
 #include "pwm.h"
 
+//pointer to data struct
+static struct pwm_data *pwm_data_ptr;
+
 
 // do some kernel module documentation
 MODULE_AUTHOR("Justin Griggs <justin@bustedengineering.com>");
@@ -29,7 +32,7 @@ static irqreturn_t timer_irq_handler(int irq, void *dev_id) {
 	omap_dm_timer_read_status(timer_ptr); // YES, you really need to do this 'wasteful' read
 
  	// set the pins to high, a reset
-
+	
 
 	// tell the kernel it's handled
 	return IRQ_HANDLED;
@@ -38,17 +41,23 @@ static irqreturn_t timer_irq_handler(int irq, void *dev_id) {
 // set the pwm frequency
 static int set_pwm_freq(int freq) {
 
+	// set preload, and autoreload of the timer
+	// the 32kHz source gives a 1ms tick rate, so we
+	// set the load to 1/freq 
+	omap_dm_timer_set_load(timer_ptr, 1,1/freq);
+	
 	return 0;
 }
 
 // set the pwm duty cycle
-static int set_pwm_dutycycle(int dutycycle) {
-
+static int set_pwm_dutycycle(uint32_t pin,int dutycycle) {
+	
+	pwm_data_ptr->dutycycle = dutycycle;
 	return 0;
 }
 
 // setup a GPIO pin for use
-static int pwm_setup_pin(int gpio_number) {
+static int pwm_setup_pin(uint32_t gpio_number) {
 
 	int err;
 
@@ -60,12 +69,21 @@ static int pwm_setup_pin(int gpio_number) {
 		err = gpio_request(gpio_number,"pwmIRQ");
 		//error check
 		if(err) {
-			printk("failed to request GPIO %i\n",gpio_number);
+			printk("pwm module: failed to request GPIO %i\n",gpio_number);
 			return -1;
 		}
 
 		// set as output
-		//gpio_direction_ouput(gpio_number,0);
+		err = gpio_direction_output(gpio_number,0);
+
+		//error check
+		if(err) {
+			printk("pwm module: failed to set GPIO to ouput\n");
+			return -1;
+		}
+
+		//add gpio data to struct
+		pwm_data_ptr->pin = gpio_number;
 	}
 	else
 	{
@@ -114,10 +132,11 @@ static int __init pwm_start(void) {
 	// get clock rate in Hz
 	timer_fclk = omap_dm_timer_get_fclk(timer_ptr);
 	gt_rate = clk_get_rate(timer_fclk);
+	pwm_data_ptr->timer_rate = gt_rate;
 
 	// set preload, and autoreload
-	// we set it to the clock rate in order to get 1 overflow every 3 seconds
-	omap_dm_timer_set_load(timer_ptr, 1, 0xFFFFFFFF - (3 * gt_rate));
+	// we set it to a default of 1 kHz
+	omap_dm_timer_set_load(timer_ptr, 1, 0xFFFFFFFF- 1/1000);
 
 	// setup timer to trigger our IRQ on the overflow event
 	omap_dm_timer_set_int_enable(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
