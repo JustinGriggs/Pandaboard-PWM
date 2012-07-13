@@ -34,11 +34,11 @@ __attribute__((section("__versions"))) = {
 	{ 0x5e07413e, "omap_dm_timer_set_prescaler" },
 	{ 0x29af210d, "omap_dm_timer_set_source" },
 	{ 0xe20df1cb, "omap_dm_timer_request" },
+	{ 0x27e1a049, "printk" },
 	{ 0xe707d823, "__aeabi_uidiv" },
 	{ 0xefd6cf06, "__aeabi_unwind_cpp_pr0" },
 	{ 0x432fd7f6, "__gpio_set_value" },
 	{ 0x6c8d5ae8, "__gpio_get_value" },
-	{ 0x27e1a049, "printk" },
 	{ 0x510742d7, "omap_dm_timer_read_status" },
 	{ 0x59031632, "omap_dm_timer_write_status" },
 };
@@ -49,4 +49,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "A439AA8466F63605F3B03A6");
+MODULE_INFO(srcversion, "888F4533CD9EF443DD624B3");

@@ -24,23 +24,22 @@ MODULE_LICENSE("GPL");
 
 /* The interrupt handler.
 This is pretty basic,  we only get an interrupt when the timer overflows,
-We are just going to print a really obnoxious message each time
 */
 static irqreturn_t timer_irq_handler(int irq, void *dev_id) {
 
 	// reset the timer interrupt status
 	omap_dm_timer_write_status(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
 	omap_dm_timer_read_status(timer_ptr); // YES, you really need to do this 'wasteful' read
-	printk("pwm module: Interrupt ");
+	//printk("pwm module: Interrupt ");
 
  	// toggle pin
 	if(gpio_get_value(pwm_data_ptr.pin) == 0 ) {
 		gpio_set_value(pwm_data_ptr.pin,1);
-		printk("high \n");
+		//printk("high \n");
 	}
 	else {
 		gpio_set_value(pwm_data_ptr.pin,0);
-		printk("low \n");
+		//printk("low \n");
 	}
 
 	// tell the kernel it's handled
@@ -151,7 +150,7 @@ static int __init pwm_start(void) {
 
 	// set preload, and autoreload
 	// we set it to a default of 1kHz
-	omap_dm_timer_set_load(timer_ptr, 1, 0xFFFFFFFF - (gt_rate/10));
+	omap_dm_timer_set_load(timer_ptr, 1, 0xFFFFFFFF - (gt_rate/4000));
 
 	// setup timer to trigger our IRQ on the overflow event
 	omap_dm_timer_set_int_enable(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
