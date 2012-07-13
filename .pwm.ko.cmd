@@ -1,1 +1,0 @@
-cmd_/home/uav/Pandaboard-PWM/pwm.ko := ld -EL -r  -T /usr/src/linux-headers-3.1.0-1282-omap4/scripts/module-common.lds --build-id  -o /home/uav/Pandaboard-PWM/pwm.ko /home/uav/Pandaboard-PWM/pwm.o /home/uav/Pandaboard-PWM/pwm.mod.o
