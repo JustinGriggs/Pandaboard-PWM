@@ -13,7 +13,8 @@
 #include "pwm.h"
 
 //pointer to data struct
-static struct pwm_data *pwm_data_ptr;
+static struct pwm_data pwm_data_ptr;
+
 
 
 // do some kernel module documentation
@@ -44,7 +45,8 @@ static int set_pwm_freq(int freq) {
 	// set preload, and autoreload of the timer
 	// the 32kHz source gives a 1ms tick rate, so we
 	// set the load to 1/freq 
-	omap_dm_timer_set_load(timer_ptr, 1,0xFFFFFFFF- (1/freq * gt_rate));
+	uint32_t load = 0xFFFFFFFF - (1/freq * pwm_data_ptr.timer_rate);
+	omap_dm_timer_set_load(timer_ptr, 1,load);
 	
 	return 0;
 }
@@ -52,7 +54,7 @@ static int set_pwm_freq(int freq) {
 // set the pwm duty cycle
 static int set_pwm_dutycycle(uint32_t pin,int dutycycle) {
 	
-	pwm_data_ptr->dutycycle = dutycycle;
+	pwm_data_ptr.dutycycle = dutycycle;
 	return 0;
 }
 
@@ -83,7 +85,7 @@ static int pwm_setup_pin(uint32_t gpio_number) {
 		}
 
 		//add gpio data to struct
-		pwm_data_ptr->pin = gpio_number;
+		pwm_data_ptr.pin = gpio_number;
 	}
 	else
 	{
@@ -113,8 +115,12 @@ static int __init pwm_start(void) {
 		return -1;
 	}
 
-	// set the clock source to the 32kHz source
-	omap_dm_timer_set_source(timer_ptr, OMAP_TIMER_SRC_32_KHZ);
+	// set the clock source to the system clock
+	ret = omap_dm_timer_set_source(timer_ptr, OMAP_TIMER_SRC_32_KHZ);
+	if(ret) {
+		printk("pwm module: could not set source\n");
+		return -1;
+	}
 
 	// set prescalar to 1:1
 	omap_dm_timer_set_prescaler(timer_ptr, 0);
@@ -132,11 +138,11 @@ static int __init pwm_start(void) {
 	// get clock rate in Hz
 	timer_fclk = omap_dm_timer_get_fclk(timer_ptr);
 	gt_rate = clk_get_rate(timer_fclk);
-	pwm_data_ptr->timer_rate = gt_rate;
+	pwm_data_ptr.timer_rate = gt_rate;
 
 	// set preload, and autoreload
-	// we set it to a default of 1 kHz
-	omap_dm_timer_set_load(timer_ptr, 1, 0xFFFFFFFF- (1/1000 * gt_rate));
+	// we set it to a default of 1kHz
+	omap_dm_timer_set_load(timer_ptr, 1, 0xFFFFFFFF- (1 * gt_rate));
 
 	// setup timer to trigger our IRQ on the overflow event
 	omap_dm_timer_set_int_enable(timer_ptr, OMAP_TIMER_INT_OVERFLOW);

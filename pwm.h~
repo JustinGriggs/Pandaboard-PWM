@@ -16,15 +16,16 @@ static int32_t timer_irq;
 // pointer gpio object
 
 // struct for pwm object
-struct pwm {
+struct pwm_data {
 	uint32_t frequency;
 	uint32_t dutycycle;
 	uint32_t pin;
+	uint32_t timer_rate;
 };
 
 
 static int set_pwm_freq(int freq);
-static int set_pwm_dutycycle(int dutycycle);
-static int pwm_setup_pin(int gpio_number);
+static int set_pwm_dutycycle(uint32_t pin,int dutycycle);
+static int pwm_setup_pin(uint32_t gpio_number);
 
 #endif
