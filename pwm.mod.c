@@ -21,6 +21,8 @@ __attribute__((section("__versions"))) = {
 	{ 0x4639a755, "omap_dm_timer_free" },
 	{ 0xf20dabd8, "free_irq" },
 	{ 0x6a9edb83, "omap_dm_timer_stop" },
+	{ 0xa8f59416, "gpio_direction_output" },
+	{ 0x47229b5c, "gpio_request" },
 	{ 0x76ab6420, "omap_dm_timer_start" },
 	{ 0xe065a362, "omap_dm_timer_set_int_enable" },
 	{ 0xba4be137, "omap_dm_timer_set_load" },
@@ -33,6 +35,8 @@ __attribute__((section("__versions"))) = {
 	{ 0xe20df1cb, "omap_dm_timer_request" },
 	{ 0x27e1a049, "printk" },
 	{ 0xefd6cf06, "__aeabi_unwind_cpp_pr0" },
+	{ 0x432fd7f6, "__gpio_set_value" },
+	{ 0x6c8d5ae8, "__gpio_get_value" },
 	{ 0x510742d7, "omap_dm_timer_read_status" },
 	{ 0x59031632, "omap_dm_timer_write_status" },
 };
@@ -43,4 +47,4 @@ __attribute__((section(".modinfo"))) =
 "depends=";
 
 
-MODULE_INFO(srcversion, "1F37A172739BF40B81890B8");
+MODULE_INFO(srcversion, "EBD565CE03257E4508483F3");
