@@ -57,6 +57,7 @@ static int set_pwm_freq(int freq) {
 	omap_dm_timer_set_load(timer_ptr, 1,load);
 	//store the new frequency
 	pwm_data_ptr.frequency = freq;
+	pwm_data_ptr.load = load;
 	
 	return 0;
 }
@@ -64,9 +65,10 @@ static int set_pwm_freq(int freq) {
 // set the pwm duty cycle
 static int set_pwm_dutycycle(uint32_t pin,int dutycycle) {
 	
-	uint32_t val = 0xFFFFFFFF+1 - (256*dutycycle/pwm_data_ptr.frequency);
+	//uint32_t val = 0xFFFFFFFF+1 - (256*dutycycle/pwm_data_ptr.frequency);
+	uint32_t val = 	pwm_data_ptr.load-2000;
 	omap_dm_timer_set_match(timer_ptr,1,val);
-	pwm_data_ptr.dutycycle = dutycycle;
+	//pwm_data_ptr.dutycycle = dutycycle;
 
 	return 0;
 }
@@ -158,7 +160,7 @@ static int __init pwm_start(void) {
 	// we set it to a default of 1kHz
 	set_pwm_freq(1000);
 
-	// setup timer to trigger IRQ on the overflow and 
+	// setup timer to trigger IRQ on the overflow and match
 	omap_dm_timer_set_int_enable(timer_ptr, OMAP_TIMER_INT_OVERFLOW | OMAP_TIMER_INT_MATCH);
 
 	// start the timer!
@@ -174,7 +176,7 @@ static int __init pwm_start(void) {
 	
 	pwm_data_ptr.pin = 38;
 
-	//set_pwm_dutycycle(1,150);
+	set_pwm_dutycycle(1,150);
 	
 
 	// return success
