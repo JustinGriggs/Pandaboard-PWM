@@ -50,10 +50,13 @@ static irqreturn_t timer_irq_handler(int irq, void *dev_id) {
 static int set_pwm_freq(int freq) {
 
 	// set preload, and autoreload of the timer
-	// the 32kHz source gives a 1ms tick rate, so we
-	// set the load to 1/freq 
-	uint32_t load = 0xFFFFFFFF - (1/freq * pwm_data_ptr.timer_rate);
+	//
+	uint32_t period = pwm_data_ptr.timer_rate / (4*freq);
+	uint32_t load = 0xFFFFFFFF+1 - period;
+
 	omap_dm_timer_set_load(timer_ptr, 1,load);
+	//store the new frequency
+	pwm_data_ptr.frequency = freq;
 	
 	return 0;
 }
@@ -61,7 +64,10 @@ static int set_pwm_freq(int freq) {
 // set the pwm duty cycle
 static int set_pwm_dutycycle(uint32_t pin,int dutycycle) {
 	
+	uint32_t val = 0xFFFFFFFF+1 - (256*dutycycle/pwm_data_ptr.frequency);
+	omap_dm_timer_set_match(timer_ptr,1,val);
 	pwm_data_ptr.dutycycle = dutycycle;
+
 	return 0;
 }
 
@@ -143,17 +149,17 @@ static int __init pwm_start(void) {
 		return ret;
 	}
 
-	// get clock rate in Hz
+	// get clock rate in Hz and add it to struct
 	timer_fclk = omap_dm_timer_get_fclk(timer_ptr);
 	gt_rate = clk_get_rate(timer_fclk);
 	pwm_data_ptr.timer_rate = gt_rate;
 
 	// set preload, and autoreload
 	// we set it to a default of 1kHz
-	omap_dm_timer_set_load(timer_ptr, 1, 0xFFFFFFFF - (gt_rate/4000));
+	set_pwm_freq(1000);
 
-	// setup timer to trigger our IRQ on the overflow event
-	omap_dm_timer_set_int_enable(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
+	// setup timer to trigger IRQ on the overflow and 
+	omap_dm_timer_set_int_enable(timer_ptr, OMAP_TIMER_INT_OVERFLOW | OMAP_TIMER_INT_MATCH);
 
 	// start the timer!
 	omap_dm_timer_start(timer_ptr);
@@ -167,6 +173,8 @@ static int __init pwm_start(void) {
 	pwm_setup_pin(38);
 	
 	pwm_data_ptr.pin = 38;
+
+	//set_pwm_dutycycle(1,150);
 	
 
 	// return success
