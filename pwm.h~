@@ -21,6 +21,7 @@ struct pwm_data {
 	uint32_t dutycycle;
 	uint32_t pin;
 	uint32_t timer_rate;
+	uint32_t value;
 };
 
 

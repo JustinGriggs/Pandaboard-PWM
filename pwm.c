@@ -15,21 +15,21 @@
 //pointer to data struct
 static struct pwm_data pwm_data_ptr;
 
+#define TIMER_MAX 0xFFFFFFFF
 
 
 // do some kernel module documentation
 MODULE_AUTHOR("Justin Griggs <justin@bustedengineering.com>");
-MODULE_DESCRIPTION("OMAP4460 PWM GPIO generation Module for robotics applications");
+MODULE_DESCRIPTION("OMAP PWM GPIO generation Module for robotics applications");
 MODULE_LICENSE("GPL");
 
-/* The interrupt handler.
-This is pretty basic,  we only get an interrupt when the timer overflows,
-*/
-static irqreturn_t timer_irq_handler(int irq, void *dev_id) {
+
+static void timer_handler(void) {
 
 	// reset the timer interrupt status
-	omap_dm_timer_write_status(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
-	omap_dm_timer_read_status(timer_ptr); // YES, you really need to do this 'wasteful' read
+	omap_dm_timer_write_status(timer_ptr,OMAP_TIMER_INT_OVERFLOW | OMAP_TIMER_INT_MATCH);
+	omap_dm_timer_read_status(timer_ptr); //you need to do this read
+	//omap_dm_timer_write_counter(timer_ptr,0);	
 	//printk("pwm module: Interrupt ");
 
  	// toggle pin
@@ -42,6 +42,14 @@ static irqreturn_t timer_irq_handler(int irq, void *dev_id) {
 		//printk("low \n");
 	}
 
+}
+
+ 
+
+//the interrupt handler
+static irqreturn_t timer_irq_handler(int irq, void *dev_id) {
+
+	timer_handler();
 	// tell the kernel it's handled
 	return IRQ_HANDLED;
 }
@@ -52,8 +60,7 @@ static int set_pwm_freq(int freq) {
 	// set preload, and autoreload of the timer
 	//
 	uint32_t period = pwm_data_ptr.timer_rate / (4*freq);
-	uint32_t load = 0xFFFFFFFF+1 - period;
-
+	uint32_t load = TIMER_MAX+1 - period;
 	omap_dm_timer_set_load(timer_ptr, 1,load);
 	//store the new frequency
 	pwm_data_ptr.frequency = freq;
@@ -65,10 +72,10 @@ static int set_pwm_freq(int freq) {
 // set the pwm duty cycle
 static int set_pwm_dutycycle(uint32_t pin,int dutycycle) {
 	
-	//uint32_t val = 0xFFFFFFFF+1 - (256*dutycycle/pwm_data_ptr.frequency);
-	uint32_t val = 	pwm_data_ptr.load-2000;
-	omap_dm_timer_set_match(timer_ptr,1,val);
-	//pwm_data_ptr.dutycycle = dutycycle;
+	//uint32_t val = TIMER_MAX+1 - (256*dutycycle/pwm_data_ptr.frequency);
+	uint32_t val = 	TIMER_MAX+1 - 2*pwm_data_ptr.load;
+	omap_dm_timer_set_match(timer_ptr,1,pwm_data_ptr.load-0x100);
+	pwm_data_ptr.dutycycle = dutycycle;
 
 	return 0;
 }
@@ -160,10 +167,10 @@ static int __init pwm_start(void) {
 	// we set it to a default of 1kHz
 	set_pwm_freq(1000);
 
-	// setup timer to trigger IRQ on the overflow and match
+	// setup timer to trigger IRQ on the overflow
 	omap_dm_timer_set_int_enable(timer_ptr, OMAP_TIMER_INT_OVERFLOW | OMAP_TIMER_INT_MATCH);
-
-	// start the timer!
+	
+	// start the timer
 	omap_dm_timer_start(timer_ptr);
 
 	// done!
