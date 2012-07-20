@@ -27,7 +27,7 @@ MODULE_LICENSE("GPL");
 static void timer_handler(void) {
 
 	// reset the timer interrupt status
-	omap_dm_timer_write_status(timer_ptr,OMAP_TIMER_INT_OVERFLOW | OMAP_TIMER_INT_MATCH);
+	omap_dm_timer_write_status(timer_ptr,OMAP_TIMER_INT_OVERFLOW);
 	omap_dm_timer_read_status(timer_ptr); //you need to do this read
 	//omap_dm_timer_write_counter(timer_ptr,0);	
 	//printk("pwm module: Interrupt ");
@@ -168,7 +168,7 @@ static int __init pwm_start(void) {
 	set_pwm_freq(1000);
 
 	// setup timer to trigger IRQ on the overflow
-	omap_dm_timer_set_int_enable(timer_ptr, OMAP_TIMER_INT_OVERFLOW | OMAP_TIMER_INT_MATCH);
+	omap_dm_timer_set_int_enable(timer_ptr, OMAP_TIMER_INT_OVERFLOW);
 	
 	// start the timer
 	omap_dm_timer_start(timer_ptr);
