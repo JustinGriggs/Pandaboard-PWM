@@ -88,12 +88,12 @@ static int pwm_setup_pin(uint32_t gpio_number) {
 	// see if that pin is available to use
 	if (gpio_is_valid(gpio_number)) {
 
-		printk("pwm module: setting up gpio pin %i...",gpio_number);
+		printk(KERN_INFO "pwm module: setting up gpio pin %i...",gpio_number);
 		// allocate the GPIO pin
 		err = gpio_request(gpio_number,"pwmIRQ");
 		//error check
 		if(err) {
-			printk("pwm module: failed to request GPIO %i\n",gpio_number);
+			printk(KERN_WARNING "pwm module: failed to request GPIO %i\n",gpio_number);
 			return -1;
 		}
 
@@ -102,7 +102,7 @@ static int pwm_setup_pin(uint32_t gpio_number) {
 
 		//error check
 		if(err) {
-			printk("pwm module: failed to set GPIO to ouput\n");
+			printk(KERN_WARNING "pwm module: failed to set GPIO to ouput\n");
 			return -1;
 		}
 
@@ -111,13 +111,13 @@ static int pwm_setup_pin(uint32_t gpio_number) {
 	}
 	else
 	{
-		printk("pwm module: requested GPIO is not valid\n");
+		printk(KERN_DEBUG "pwm module: requested GPIO is not valid\n");
 		// return failure
 		return -1;
 	}
 
 	// return success
-	printk("DONE\n");
+	printk(KERN_INFO "pwm module: setup DONE\n");
 	return 0;
 }
 
@@ -134,14 +134,14 @@ static int __init pwm_start(void) {
 	timer_ptr = omap_dm_timer_request();
 	if(timer_ptr == NULL){
 		// no timers available
-		printk("pwm module: No more gp timers available, bailing out\n");
+		printk(KERN_ERR "pwm module: No more gp timers available, bailing out\n");
 		return -1;
 	}
 
 	// set the clock source to the system clock
 	ret = omap_dm_timer_set_source(timer_ptr, OMAP_TIMER_SRC_SYS_CLK);
 	if(ret) {
-		printk("pwm module: could not set source\n");
+		printk(KERN_ERR "pwm module: could not set source\n");
 		return -1;
 	}
 
@@ -154,7 +154,7 @@ static int __init pwm_start(void) {
 	// install our IRQ handler for our timer
 	ret = request_irq(timer_irq, timer_irq_handler, IRQF_DISABLED | IRQF_TIMER , "pwm", timer_irq_handler);
 	if(ret){
-		printk("pwm module: request_irq failed (on irq %d), bailing out\n", timer_irq);
+		printk(KERN_WARNING "pwm module: request_irq failed (on irq %d), bailing out\n", timer_irq);
 		return ret;
 	}
 
@@ -174,7 +174,8 @@ static int __init pwm_start(void) {
 	omap_dm_timer_start(timer_ptr);
 
 	// done!
-	printk("pwm module: GP Timer initialized and started (%lu Hz, IRQ %d)\n", (long unsigned)gt_rate, timer_irq);
+	printk(KERN_INFO "pwm module: GP Timer initialized and started (%lu Hz, IRQ %d)\n",
+	(long unsigned)gt_rate, timer_irq);
 
 
 	
